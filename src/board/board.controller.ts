@@ -6,7 +6,9 @@ import {
   // Patch,
   Param,
   Post,
-  Put, ValidationPipe
+  Put,
+  Query,
+  ValidationPipe,
 } from '@nestjs/common';
 import { CustomLoggerService } from 'src/logger/logger.service';
 import { BoardService } from './board.service';
@@ -31,8 +33,11 @@ export class BoardController {
   }
 
   @Get()
-  findAll() {
-    return this.boardService.findAll();
+  findAll(@Query('page') page: number) {
+    const boards = this.boardService.findAll({
+      page,
+    });
+    return boards;
   }
 
   @Get(':id')
@@ -41,7 +46,10 @@ export class BoardController {
   }
 
   @Post()
-  create(@Body(new ValidationPipe({ stopAtFirstError: true,groups: ['create'] })) createBoardDto: CreateBoardDto) {
+  create(
+    @Body(new ValidationPipe({ stopAtFirstError: true, groups: ['create'] }))
+    createBoardDto: CreateBoardDto,
+  ) {
     this.logger.debug('test');
     return this.boardService.create(createBoardDto);
   }

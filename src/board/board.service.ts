@@ -1,5 +1,6 @@
 import { Injectable /* Logger */ } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm/dist';
+import { ApiResponseService } from 'src/api.response/api.response.service';
 import { CustomLoggerService } from 'src/logger/logger.service';
 import { Repository } from 'typeorm';
 import { CreateBoardDto } from './dto/create-board.dto';
@@ -8,9 +9,13 @@ import { Board } from './entities/board.entity';
 
 @Injectable()
 export class BoardService {
+  private readonly LIMIT: number = 3;
+
   constructor(
     @InjectRepository(Board)
     private readonly boardRepository: Repository<Board>,
+    // @Inject()
+    private readonly apiResponseServide: ApiResponseService,
     private logger: CustomLoggerService,
   ) {
     logger.setContext(BoardService.name);
@@ -19,11 +24,13 @@ export class BoardService {
   // private readonly logger = new Logger(BoardService.name);
   // private readonly mylogger = new CustomLoggerService();
 
-  findAll() {
-    this.logger.log('test');
-    this.logger.log('test2');
+  findAll({ page = 1 }: { page?: number }) {
+    this.logger.log('test', page);
+    console.log(this.apiResponseServide)
     return this.boardRepository.find({
       withDeleted: false,
+      skip: (page - 1) * this.LIMIT,
+      take: this.LIMIT,
     });
   }
 
