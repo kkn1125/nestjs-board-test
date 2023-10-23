@@ -8,26 +8,24 @@ import {
   Post,
   Put,
   Query,
+  Request,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
-import { CustomLoggerService } from 'src/logger/logger.service';
+import { AuthGuard } from '@src/auth/auth.guard';
+// import { AuthGuard } from '@nestjs/passport';
+import { CustomLoggerService } from '@src/logger/logger.service';
+import { UserService } from '@src/user/user.service';
 import { BoardService } from './board.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
-// import { UpdateBoardDto } from './dto/update-board.dto';
-
-// class CustomPipe extends ValidationPipe {
-//   exceptionFactory = (errors) => {
-//     console.log('errors', errors);
-//     return new BadRequestException(errors);
-//   };
-// }
 
 @Controller('board')
 export class BoardController {
   constructor(
+    private readonly userService: UserService,
     private readonly boardService: BoardService,
-    private logger: CustomLoggerService,
+    private readonly logger: CustomLoggerService,
   ) {
     logger.setContext(BoardController.name);
   }
@@ -45,12 +43,15 @@ export class BoardController {
     return this.boardService.findOne(+id);
   }
 
+  @UseGuards(AuthGuard)
   @Post()
-  create(
+  async create(
+    @Request() req,
     @Body(new ValidationPipe({ stopAtFirstError: true, groups: ['create'] }))
     createBoardDto: CreateBoardDto,
   ) {
-    this.logger.debug('test');
+    console.log(req.user, createBoardDto);
+    createBoardDto.user = await this.userService.findOne(req.user.sub);
     return this.boardService.create(createBoardDto);
   }
 

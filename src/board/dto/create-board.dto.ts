@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsString, Min } from 'class-validator';
+import { User } from '@src/user/entities/user.entity';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class CreateBoardDto {
   @IsNotEmpty({
@@ -12,7 +19,7 @@ export class CreateBoardDto {
   // 단, 그룹을 포기한다면 일괄처리 가능
   // 그룹 대체제로 custom validator 제작해서 분기분, validate메서드 등
   // 대체 가능
-  @Min(1, {
+  @MinLength(1, {
     groups: ['create', 'update'],
   })
   title: string;
@@ -25,13 +32,5 @@ export class CreateBoardDto {
   })
   content: string;
 
-  @IsNotEmpty({
-    groups: ['create'],
-  })
-  @IsString({
-    groups: ['create', 'update'],
-  })
-  author: string;
-
-  deleted_at: string;
+  user: User;
 }

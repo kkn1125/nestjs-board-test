@@ -1,12 +1,19 @@
+import { ConfigService } from '@nestjs/config/dist';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { CustomLoggerService } from './logger/logger.service';
+import { UserService } from './user/user.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
-  app.useLogger(app.get(CustomLoggerService));
+  const configService: ConfigService = app.get<ConfigService>(ConfigService);
+  const port = configService.get('PORT', 5000);
+  const logger = app.get(CustomLoggerService);
+  app.setGlobalPrefix('api');
+  app.useLogger(logger);
+
   // app.useGlobalPipes(
   //   new ValidationPipe({
   //     whitelist: true,
@@ -24,6 +31,16 @@ async function bootstrap() {
   //   }),
   // );
 
-  await app.listen(3000);
+  app.enableCors({
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:5000',
+      'https://kkn1125.github.io',
+    ],
+  });
+
+  await app.listen(port);
+
+  logger.log('server listening on port ' + port);
 }
 bootstrap();

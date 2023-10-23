@@ -2,21 +2,41 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class ApiResponseService {
-  code: number;
-  data: any;
+  _ok: boolean = true;
+  _code: number = 200;
+  _data: any = {};
 
-  constructor(data) {
-    this.data = data;
-  }
+  constructor() {}
 
-  setCode(code: number) {
-    this.code = code;
+  ok(ok: boolean) {
+    this._ok = ok;
     return this;
   }
 
-  
+  code(code: number) {
+    this._code = code;
+    return this;
+  }
 
-  static output(data) {
-    return new ApiResponseService(data);
+  data(data: any) {
+    this._data = data;
+    return this;
+  }
+
+  out() {
+    return {
+      ok: this._ok,
+      code: this._code,
+      data: this._data,
+    };
+  }
+
+  outputWithoutData() {
+    const out = this.out();
+    delete out.data;
+    return out;
+  }
+  output() {
+    return this.out();
   }
 }

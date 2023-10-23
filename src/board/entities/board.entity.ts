@@ -1,4 +1,13 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from '@src/user/entities/user.entity';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  JoinColumn,
+  JoinTable,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { DeleteDateColumn } from 'typeorm/decorator/columns/DeleteDateColumn';
 
 @Entity()
@@ -13,8 +22,16 @@ export class Board extends BaseEntity {
   content: string;
 
   @Column()
-  author: string;
+  author: number;
 
   @DeleteDateColumn()
   deleted_at: string;
+
+  @ManyToOne(() => User, (user) => user.boards, {
+    cascade: true,
+  })
+  @JoinColumn({
+    name: 'author',
+  })
+  user: User;
 }

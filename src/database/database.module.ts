@@ -1,9 +1,15 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm/dist';
-import { typeOrmConfig, /* databaseProviders */ } from './database.providers';
+import { DatabaseConfigurationService } from './database.configuration';
+import /* databaseProviders */ './database.providers';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(typeOrmConfig)],
+  imports: [
+    TypeOrmModule.forRootAsync({
+      useClass: DatabaseConfigurationService,
+    }),
+  ],
   // providers: [...databaseProviders],
   // exports: [...databaseProviders],
 })
