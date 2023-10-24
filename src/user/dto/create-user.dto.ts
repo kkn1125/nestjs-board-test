@@ -1,14 +1,23 @@
-import { IsIn, IsNotEmpty, Matches, Max, Min } from 'class-validator';
+import { USER_ROLES } from '@src/role/role.enum';
+import {
+  IsIn,
+  IsNotEmpty,
+  Matches,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 const GENDER_LIST = ['male', 'female', 'others', 'private'];
 
 export class CreateUserDto {
   @IsNotEmpty()
-  @Max(50)
-  @Min(5)
+  @MaxLength(50)
+  @MinLength(5)
   username: string;
   @IsNotEmpty()
-  @Min(8)
+  @MinLength(8)
   password: string;
   @IsNotEmpty()
   email: string;
@@ -24,4 +33,6 @@ export class CreateUserDto {
   gender: string;
   @IsNotEmpty()
   birth: string;
+  @IsIn(Object.values(USER_ROLES))
+  role: USER_ROLES;
 }

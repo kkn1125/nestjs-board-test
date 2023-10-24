@@ -1,3 +1,4 @@
+import { ConsoleLogger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config/dist';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -10,9 +11,10 @@ async function bootstrap() {
   });
   const configService: ConfigService = app.get<ConfigService>(ConfigService);
   const port = configService.get('PORT', 5000);
-  const logger = app.get(CustomLoggerService);
+  const logger = new ConsoleLogger('System');
+  // const logger = app.get(CustomLoggerService);
   app.setGlobalPrefix('api');
-  app.useLogger(logger);
+  // app.useLogger(logger);
 
   // app.useGlobalPipes(
   //   new ValidationPipe({

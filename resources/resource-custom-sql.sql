@@ -2,6 +2,7 @@ use `nest-test`;
 
 show tables;
 desc board;
+desc user;
 
 select * from user;
 

@@ -15,11 +15,14 @@ import {
 import { AuthGuard } from '@src/auth/auth.guard';
 // import { AuthGuard } from '@nestjs/passport';
 import { CustomLoggerService } from '@src/logger/logger.service';
+import { Role } from '@src/role/role.decorator';
+import { RoleGuard } from '@src/role/role.guard';
 import { UserService } from '@src/user/user.service';
 import { BoardService } from './board.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 
+@UseGuards(RoleGuard)
 @Controller('board')
 export class BoardController {
   constructor(
@@ -31,10 +34,13 @@ export class BoardController {
   }
 
   @Get()
+  @Role(['user', 'admin'])
   findAll(@Query('page') page: number) {
     const boards = this.boardService.findAll({
       page,
     });
+    this.logger.log('test page');
+    this.logger.log(page);
     return boards;
   }
 

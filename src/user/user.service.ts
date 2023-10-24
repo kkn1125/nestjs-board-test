@@ -11,15 +11,15 @@ import { User } from './entities/user.entity';
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private readonly boardRepository: Repository<User>,
+    private readonly userRepository: Repository<User>,
     private readonly apiResponse: ApiResponseService,
     private readonly logger: CustomLoggerService,
   ) {}
   async create(createUserDto: CreateUserDto) {
     let dto: CreateUserDto = null;
-    const runner = this.boardRepository.manager.connection.createQueryRunner();
+    const runner = this.userRepository.manager.connection.createQueryRunner();
     try {
-      dto = await this.boardRepository.save(createUserDto, {
+      dto = await this.userRepository.save(createUserDto, {
         transaction: true,
       });
       await runner.commitTransaction();
@@ -33,16 +33,18 @@ export class UserService {
   }
 
   findAll() {
-    this.logger.log('test findall in user');
-    return this.boardRepository.find();
+    this.logger.log('test findall in user' /* , this.hidePrivateOptions() */);
+    return this.userRepository.find({
+      select: this.hidePrivateOptions(),
+    });
   }
 
   findOne(id: number) {
-    return this.boardRepository.findOne({ where: { id } });
+    return this.userRepository.findOne({ where: { id } });
   }
 
   findOneByEmail(email: string) {
-    return this.boardRepository.findOne({ where: { email } });
+    return this.userRepository.findOne({ where: { email } });
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
@@ -51,5 +53,15 @@ export class UserService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  hidePrivateOptions() {
+    return Object.fromEntries([
+      ['username', true],
+      ['email', true],
+      ['gender', true],
+      ['birth', true],
+      ['role', true],
+    ]);
   }
 }
