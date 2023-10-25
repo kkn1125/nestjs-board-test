@@ -28,7 +28,7 @@ export class UserService {
     } finally {
       await runner.release();
 
-      return this.apiResponse.data(dto).out();
+      return this.apiResponse.data(dto).output();
     }
   }
 

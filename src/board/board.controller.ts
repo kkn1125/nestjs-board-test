@@ -12,16 +12,20 @@ import {
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiResponseService } from '@src/api.response/api.response.service';
 import { AuthGuard } from '@src/auth/auth.guard';
-// import { AuthGuard } from '@nestjs/passport';
 import { CustomLoggerService } from '@src/logger/logger.service';
 import { Role } from '@src/role/role.decorator';
 import { RoleGuard } from '@src/role/role.guard';
 import { UserService } from '@src/user/user.service';
+import { BoardPipe } from './board.pipe';
 import { BoardService } from './board.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
+import { Board } from './entities/board.entity';
 
+@ApiTags('게시판 API')
 @UseGuards(RoleGuard)
 @Controller('board')
 export class BoardController {
@@ -33,15 +37,23 @@ export class BoardController {
     logger.setContext(BoardController.name);
   }
 
+  @ApiOperation({
+    summary: '게시판 전체 조회',
+    description: '게시판 전체를 조회한다.',
+  })
+  @ApiOkResponse({
+    status: '2XX',
+    type: Board,
+  })
   @Get()
   @Role(['user', 'admin'])
-  findAll(@Query('page') page: number) {
-    const boards = this.boardService.findAll({
-      page,
-    });
+  findAll(@Query('page', BoardPipe) page: number) {
+    // const boards = this.boardService.findAll({
+    //   page,
+    // });
     this.logger.log('test page');
     this.logger.log(page);
-    return boards;
+    return page;
   }
 
   @Get(':id')

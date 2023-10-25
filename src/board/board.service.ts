@@ -25,13 +25,12 @@ export class BoardService {
 
   async findAll({ page = 1 }: { page?: number }) {
     // this.logger.log('test', page);
-    // console.log(this.apiResponse);
     const boards = await this.boardRepository.find({
       withDeleted: false,
       skip: (page - 1) * this.LIMIT,
       take: this.LIMIT,
     });
-    return this.apiResponse.data(boards).output();
+    return this.apiResponse.code(200).data(boards).output();
   }
 
   findOne(id: number) {

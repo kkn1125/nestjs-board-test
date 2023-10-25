@@ -2,18 +2,18 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class ApiResponseService {
-  _ok: boolean = true;
-  _code: number = 200;
-  _data: any = {};
+  private _ok: boolean = true;
+  private _code: number = 200;
+  private _data: any = {};
 
   constructor() {}
 
-  ok(ok: boolean) {
+  ok(ok: boolean = true) {
     this._ok = ok;
     return this;
   }
 
-  code(code: number) {
+  code(code: number = 200) {
     this._code = code;
     return this;
   }
@@ -23,7 +23,7 @@ export class ApiResponseService {
     return this;
   }
 
-  out() {
+  private out() {
     return {
       ok: this._ok,
       code: this._code,
