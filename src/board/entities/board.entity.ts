@@ -3,11 +3,13 @@ import { User } from '@src/user/entities/user.entity';
 import {
   BaseEntity,
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   JoinTable,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { DeleteDateColumn } from 'typeorm/decorator/columns/DeleteDateColumn';
 
@@ -29,6 +31,10 @@ export class Board extends BaseEntity {
   @Column()
   author: number;
 
+  @ApiProperty({ example: 0, description: '게시판 노출 순서' })
+  @Column()
+  sequence: number;
+
   @ApiProperty({
     examples: ['2023-10-12', null],
     description: '게시글 삭제 시간',
@@ -37,6 +43,12 @@ export class Board extends BaseEntity {
   })
   @DeleteDateColumn()
   deleted_at: string;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
 
   @ManyToOne(() => User, (user) => user.boards, {
     cascade: true,

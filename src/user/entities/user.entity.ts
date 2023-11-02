@@ -4,6 +4,7 @@ import {
   BaseEntity,
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -40,16 +41,16 @@ export class User extends BaseEntity {
   signed_in: boolean;
 
   @CreateDateColumn()
-  created_at: string;
+  created_at: Date;
 
   @UpdateDateColumn()
-  updated_at: string;
+  updated_at: Date;
+
+  @DeleteDateColumn()
+  deleted_at: Date;
 
   @Column()
-  deleted_at: string;
-
-  @Column()
-  last_sign_in: string;
+  last_sign_in: Date;
 
   @Column()
   fail_sign_in_count: number;

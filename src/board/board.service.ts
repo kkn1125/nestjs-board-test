@@ -9,7 +9,7 @@ import { Board } from './entities/board.entity';
 
 @Injectable()
 export class BoardService {
-  private readonly LIMIT: number = 3;
+  private readonly LIMIT: number = 10;
 
   constructor(
     @InjectRepository(Board)
@@ -26,19 +26,39 @@ export class BoardService {
   async findAll({ page = 1 }: { page?: number }) {
     // this.logger.log('test', page);
     const boards = await this.boardRepository.find({
-      withDeleted: false,
       skip: (page - 1) * this.LIMIT,
       take: this.LIMIT,
     });
-    return this.apiResponse.code(200).data(boards).output();
+    return boards;
   }
 
-  findOne(id: number) {
-    return this.boardRepository.findOne({ where: { id } });
+  async findOne(id: number) {
+    const board = await this.boardRepository.findOne({ where: { id } });
+    if (board) {
+      return board;
+    } else {
+      ApiResponseService.NOT_FOUND('not found board.', +id);
+    }
   }
 
-  create(createBoardDto: CreateBoardDto) {
-    return this.boardRepository.save(createBoardDto);
+  async create(createBoardDto: CreateBoardDto) {
+    const qr = this.boardRepository.manager.connection.createQueryRunner();
+    let dto: CreateBoardDto;
+    await qr.startTransaction();
+    try {
+      console.log(createBoardDto);
+      dto = await this.boardRepository.save(createBoardDto, {
+        transaction: true,
+      });
+      await qr.commitTransaction();
+      await qr.release();
+      return dto;
+    } catch (error) {
+      console.log('rollback!', error);
+      await qr.rollbackTransaction();
+      await qr.release();
+      ApiResponseService.BAD_REQUEST('board create was rollback.');
+    }
   }
 
   update(id: number, updateBoardDto: UpdateBoardDto) {

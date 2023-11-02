@@ -6,6 +6,9 @@ import { AppModule } from './app.module';
 import { BoardModule } from './board/board.module';
 import { CustomLoggerService } from './logger/logger.service';
 import { UserService } from './user/user.service';
+import { ResponseFormInterceptor } from './user/response-form/response-form.interceptor';
+import { ApiResponseService } from './api.response/api.response.service';
+import { HttpExceptionFilter } from './libs/filter/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -15,7 +18,18 @@ async function bootstrap() {
   const port = configService.get('PORT', 5000);
   const logger = new ConsoleLogger('System');
   // const logger = app.get(CustomLoggerService);
-  app.setGlobalPrefix('api');
+
+  app.setGlobalPrefix('api', {
+    exclude: ['/', '/assets/*', '@vite/*', '@react-refresh', 'src/*'],
+  });
+  app.useGlobalFilters(
+    new HttpExceptionFilter(app.get<ApiResponseService>(ApiResponseService)),
+  );
+  app.useGlobalInterceptors(
+    new ResponseFormInterceptor(
+      app.get<ApiResponseService>(ApiResponseService),
+    ),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('board domain')
@@ -52,6 +66,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'http://localhost:5000',
+      'http://localhost:8000',
       'https://kkn1125.github.io',
     ],
   });

@@ -26,7 +26,6 @@ import { UpdateBoardDto } from './dto/update-board.dto';
 import { Board } from './entities/board.entity';
 
 @ApiTags('게시판 API')
-@UseGuards(RoleGuard)
 @Controller('board')
 export class BoardController {
   constructor(
@@ -46,14 +45,12 @@ export class BoardController {
     type: Board,
   })
   @Get()
-  @Role(['user', 'admin'])
-  findAll(@Query('page', BoardPipe) page: number) {
-    // const boards = this.boardService.findAll({
-    //   page,
-    // });
-    this.logger.log('test page');
-    this.logger.log(page);
-    return page;
+  // @Role(['user', 'admin'])
+  findAll(@Query('page') page: number) {
+    const boards = this.boardService.findAll({
+      page,
+    });
+    return boards;
   }
 
   @Get(':id')
@@ -61,15 +58,19 @@ export class BoardController {
     return this.boardService.findOne(+id);
   }
 
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard, RoleGuard)
   @Post()
   async create(
     @Request() req,
-    @Body(new ValidationPipe({ stopAtFirstError: true, groups: ['create'] }))
+    @Body(
+      new ValidationPipe({
+        stopAtFirstError: true,
+        transform: true,
+        skipMissingProperties: true,
+      }),
+    )
     createBoardDto: CreateBoardDto,
   ) {
-    console.log(req.user, createBoardDto);
-    createBoardDto.user = await this.userService.findOne(req.user.sub);
     return this.boardService.create(createBoardDto);
   }
 

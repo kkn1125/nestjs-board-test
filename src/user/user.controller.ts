@@ -1,37 +1,50 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
   ValidationPipe,
 } from '@nestjs/common';
-import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ParseUserDataPipe } from './signup/parse-user-data.pipe';
+import { SignupPipe } from './signup/signup.pipe';
+import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  @Post()
-  create(
-    @Body(new ValidationPipe({ stopAtFirstError: true }))
-    createUserDto: CreateUserDto,
-  ) {
-    return this.userService.create(createUserDto);
-  }
 
   @Get()
   findAll() {
     return this.userService.findAll();
   }
 
+  @HttpCode(200)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);
+  }
+
+  @Post()
+  create(
+    @Body(
+      ParseUserDataPipe,
+      new ValidationPipe({
+        stopAtFirstError: true,
+        transform: true,
+        transformOptions: {},
+        skipMissingProperties: true,
+      }),
+      SignupPipe,
+    )
+    createUserDto: CreateUserDto,
+  ) {
+    return this.userService.create(createUserDto);
   }
 
   @Patch(':id')

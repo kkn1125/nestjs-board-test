@@ -92,7 +92,7 @@ describe('BoardService', () => {
 
   it('test find', async () => {
     const boards = await service.findAll({ page: 1 });
-    expect(boards.data.length).toStrictEqual(2);
+    expect(boards.length).toStrictEqual(2);
   });
 
   it('test findOne', async () => {
@@ -103,7 +103,7 @@ describe('BoardService', () => {
   it('test create', async () => {
     /* const board =  */ await service.create(createdData);
     const boards = await service.findAll({ page: 1 });
-    const found = boards.data.find(
+    const found = boards.find(
       (board) => board.title === createdData.title,
     );
     expect(found.id).toStrictEqual(3);
