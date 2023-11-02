@@ -1,4 +1,6 @@
 import { ApiDataContext, Board, User } from '@/context/api-data.provider';
+import { AuthContext } from '@/context/auth.provider';
+import { apiAxios } from '@/util/instances';
 import {
   Avatar,
   Box,
@@ -9,14 +11,16 @@ import {
   Typography,
 } from '@mui/material';
 import React, { useContext, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 function BoardDetail() {
   const params = useParams();
   const apiData = useContext(ApiDataContext);
   const [board, setBoard] = useState<Board | undefined>(undefined);
   const [user, setUser] = useState<User | undefined>(undefined);
+  const auth = useContext(AuthContext);
   const navigate = useNavigate();
+  const locate = useLocation();
 
   useEffect(() => {
     const id = params.id || NaN;
@@ -30,6 +34,19 @@ function BoardDetail() {
 
   const handleRedirect = (path: string) => {
     navigate(path);
+  };
+
+  const handleUpdateBoard = () => {
+    if (board && user) {
+      navigate('/board/write', {
+        state: { board, user, referer: locate.pathname },
+      });
+    }
+  };
+  const handleDeleteBoard = () => {
+    if (board) {
+      apiAxios.delete(`/board/${board.id}`);
+    }
   };
 
   return (
@@ -74,13 +91,38 @@ function BoardDetail() {
               {new Date(board.created_at).toLocaleString('ko')}
             </Typography>
           </Box>
+          <Stack direction="row" gap={1}>
+            <Button
+              variant="contained"
+              color="warning"
+              onClick={() => handleRedirect('/board')}
+            >
+              back
+            </Button>
+            {auth.user && auth.user.id === board.author && (
+              <>
+                <Button
+                  variant="contained"
+                  color="info"
+                  onClick={handleUpdateBoard}
+                >
+                  update
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={handleDeleteBoard}
+                >
+                  delete
+                </Button>
+              </>
+            )}
+          </Stack>
         </>
       ) : (
         <Box>no board.</Box>
       )}
-      <Stack direction="row" gap={1} onClick={() => handleRedirect('/board')}>
-        <Button variant="contained">back</Button>
-      </Stack>
+
       <Toolbar />
     </Stack>
   );

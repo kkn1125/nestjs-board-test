@@ -1,7 +1,10 @@
 import {
   API_DATA_ACTION,
   ApiDataDispatchContext,
+  Board,
+  User,
 } from '@/context/api-data.provider';
+import { AuthContext } from '@/context/auth.provider';
 import { apiAxios } from '@/util/instances';
 import {
   Button,
@@ -12,33 +15,92 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import { ChangeEvent, FormEvent, useContext, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {
+  ChangeEvent,
+  FormEvent,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 function WriteBoard() {
-  const [formdata, setFormdata] = useState({});
+  const [formdata, setFormdata] = useState<{
+    title?: string;
+    content?: string;
+  }>({});
   const formRef = useRef<HTMLFormElement>(null);
+  const auth = useContext(AuthContext);
   const apiDataDispatch = useContext(ApiDataDispatchContext);
   const navigate = useNavigate();
+  const locate = useLocation();
+  const writeMode = !locate.state ? 'write' : 'update';
+
+  useEffect(() => {
+    if (writeMode === 'update') {
+      const state = locate.state;
+      const title = state.board.title;
+      const content = state.board.content;
+      setFormdata((forms) => ({
+        ...forms,
+        title,
+        content,
+      }));
+    }
+  }, []);
+
+  const sendPostRequest = async (formData: FormData, user: User) => {
+    return await apiAxios.post('/board', {
+      ...Object.fromEntries(formData.entries()),
+      author: user.id,
+    });
+  };
+  const sendPutRequest = async (
+    formData: FormData,
+    user: User,
+    board: Board,
+  ) => {
+    return await apiAxios.put(
+      `/board/${board.id}`,
+      {
+        ...Object.fromEntries(formData.entries()),
+        author: user.id,
+      },
+      {
+        headers: {
+          Authorization: 'Bearer ' + auth.auth.token,
+        },
+      },
+    );
+  };
 
   const sendRequest = async (e: FormEvent) => {
     e.preventDefault();
+
     if (formRef.current) {
       const formData = new FormData(formRef.current);
+      const user = auth.user;
+      const board = locate.state && locate.state.board;
       try {
-        const response = await apiAxios.post('/board', {
-          ...Object.fromEntries(formData.entries()),
-          author: 5,
-        });
-        if (response.status === 201) {
-          apiDataDispatch({
-            type: API_DATA_ACTION.UPDATE_VER,
-          });
-          navigate('/board');
-          console.log('✨ success!');
-        } else {
-          console.log(response.data);
-          throw new Error(response.data);
+        if (user) {
+          const response = await (writeMode === 'write'
+            ? sendPostRequest(formData, user)
+            : sendPutRequest(formData, user, board));
+          if (response.status === 201) {
+            apiDataDispatch({
+              type: API_DATA_ACTION.UPDATE_VER,
+            });
+            if (writeMode === 'write') {
+              navigate('/board');
+            } else {
+              navigate(`/board/${board.id}`);
+            }
+            console.log('✨ success!');
+          } else {
+            console.log(response.data);
+            throw new Error(response.data);
+          }
         }
       } catch (error) {
         console.debug(error);
@@ -59,6 +121,10 @@ function WriteBoard() {
     });
   };
 
+  const handleRedirect = (path: string) => {
+    navigate(path);
+  };
+
   return (
     <Container maxWidth="sm">
       <Typography
@@ -66,7 +132,7 @@ function WriteBoard() {
         fontWeight={700}
         gutterBottom
       >
-        {'write board'.toUpperCase()}
+        {`${writeMode} board`.toUpperCase()}
       </Typography>
       <Stack
         component={'form'}
@@ -79,21 +145,31 @@ function WriteBoard() {
           name="title"
           label="title"
           onChange={handleData}
+          value={formdata.title || ''}
         />
         <TextField
           size="small"
           name="content"
           label="content"
           onChange={handleData}
+          value={formdata.content || ''}
         />
         <Divider />
         <Stack direction="row" gap={1}>
           <Button variant="contained" type="submit">
-            confirm
+            {writeMode}
           </Button>
           <Button variant="contained" color="error" type="button">
             cancel
           </Button>
+          {writeMode === 'update' && (
+            <Button
+              color="warning"
+              onClick={() => handleRedirect(locate.state.referer)}
+            >
+              go to detail
+            </Button>
+          )}
         </Stack>
       </Stack>
       <Toolbar />

@@ -20,7 +20,9 @@
     "jose": "^5.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.17.0"
+    "react-router-dom": "^6.17.0",
+    "suneditor": "^2.45.1",
+    "suneditor-react": "^3.6.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
