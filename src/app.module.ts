@@ -14,6 +14,7 @@ import { UserModule } from './user/user.module';
 import { ViewModule } from './view/view.module';
 import { JwtStrategy } from './auth/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
+import { MailerModule } from './mailer/mailer.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { PassportModule } from '@nestjs/passport';
     UserModule,
     RoleModule,
     ViewModule,
+    MailerModule,
   ],
   controllers: [],
   providers: [],

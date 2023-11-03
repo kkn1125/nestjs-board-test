@@ -18,7 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "start:dual": "concurrently --kill-others-on-fail \"pnpm run start:dev\" \"cd view/ && pnpm run dev\""
+    "start:dual": "concurrently --kill-others-on-fail \"pnpm run start:dev\" \"cd view/ && pnpm run dev\"",
+    "check:open": "bash ./check-open"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.0",
@@ -36,6 +37,7 @@
     "class-validator": "^0.14.0",
     "crypto-js": "^4.2.0",
     "mysql2": "^3.6.2",
+    "nodemailer": "^6.9.7",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
@@ -51,6 +53,7 @@
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",
+    "@types/nodemailer": "^6.4.13",
     "@types/passport-jwt": "^3.0.12",
     "@types/passport-local": "^1.0.37",
     "@types/supertest": "^2.0.12",

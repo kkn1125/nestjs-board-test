@@ -12,6 +12,7 @@ import { CustomLoggerService } from '@src/logger/logger.service';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { LocalAuthGuard } from './local-auth.guard';
+import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -43,4 +44,6 @@ export class AuthController {
     const result = this.authService.signOut(token);
     return !!result;
   }
+
+  
 }

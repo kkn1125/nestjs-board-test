@@ -1,0 +1,5 @@
+#! /usr/bin/env bash
+
+FINDS_DEV="$(netstat -ano | findstr "5000")\n$(netstat -ano | findstr "8000")"
+
+echo -e $FINDS_DEV

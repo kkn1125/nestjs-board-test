@@ -5,14 +5,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
-type ApiResponse = {
-  ok?: boolean;
-  code?: number;
-  data?: any;
-  message?: string;
-  detail?: string | string[];
-};
-
 @Injectable()
 export class ApiResponseService {
   output(data?: any) {
@@ -55,6 +47,22 @@ export class ApiResponseService {
     details?: string | number | (string | number)[],
   ) {
     throw new UnauthorizedException(message, {
+      cause: details,
+    });
+  }
+
+  static SUCCESS(details?: string | string[]) {
+    throw new HttpException('success.', HttpStatus.OK, {
+      cause: details,
+    });
+  }
+  static CREATED(details?: string | string[]) {
+    throw new HttpException('created.', HttpStatus.CREATED, {
+      cause: details,
+    });
+  }
+  static FORBIDDEN(details?: string | string[]) {
+    throw new HttpException('access denied.', HttpStatus.FORBIDDEN, {
       cause: details,
     });
   }
