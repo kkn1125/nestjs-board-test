@@ -1,38 +1,45 @@
+import ImageBox from '@/components/common/ImageBox';
 import { ApiDataContext, Board, User } from '@/context/api-data.provider';
-import { Stack, Typography } from '@mui/material';
-import { useContext, useEffect, useState } from 'react';
+import { AuthContext } from '@/context/auth.provider';
+import { Box, Stack, Typography } from '@mui/material';
+import {
+  Component,
+  ReactElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 function Home() {
-  const apiData = useContext(ApiDataContext);
-
-  const [users, setUsers] = useState<User[]>([]);
-
-  const [boards, setBoards] = useState<Board[]>([]);
-
-  useEffect(() => {
-    setUsers(apiData.user);
-    setBoards(apiData.board);
-  }, [apiData.user, apiData.board]);
-
   return (
     <Stack>
       <Typography
         fontWeight={700}
         fontSize={(theme) => theme.typography.pxToRem(32)}
       >
-        Title1
+        Lorem ipsum dolor sit amet.
       </Typography>
-      <Typography>contents...</Typography>
+      <ImageBox
+        placeholder
+        // hideSize
+        width={'100%'}
+        height={350}
+      />
       <Typography
         fontWeight={700}
         fontSize={(theme) => theme.typography.pxToRem(32)}
       >
-        Title2
+        Lorem, ipsum dolor.
       </Typography>
-
-      {boards.map((board) => (
-        <Typography key={board.id}>{board.title}</Typography>
-      ))}
+      <ImageBox
+        placeholder
+        // hideSize
+        width={'100%'}
+        height={350}
+      />
     </Stack>
   );
 }

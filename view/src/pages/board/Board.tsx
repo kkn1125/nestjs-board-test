@@ -1,4 +1,4 @@
-import { ApiDataContext, Board } from '@/context/api-data.provider';
+import { ApiDataContext, Board, User } from '@/context/api-data.provider';
 import { AuthContext } from '@/context/auth.provider';
 import {
   Box,
@@ -9,10 +9,11 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import React, { useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { NavigateOptions, useNavigate } from 'react-router-dom';
 
 function Board() {
+  const [users, setUsers] = useState<User[]>([]);
   const [boards, setBoards] = useState<Board[]>([]);
   const apiData = useContext(ApiDataContext);
   const auth = useContext(AuthContext);
@@ -23,8 +24,40 @@ function Board() {
     setBoards(apiData.board);
   }, [apiData]);
 
-  const handleRedirect = (path: string) => {
-    navigate(path);
+  useEffect(() => {
+    setUsers(apiData.user);
+    setBoards(apiData.board);
+  }, [apiData.user, apiData.board]);
+
+  const boardAuthor = useMemo(
+    () =>
+      boards.length === 0 ? (
+        <ListItem>
+          <ListItemText>no items</ListItemText>
+        </ListItem>
+      ) : (
+        boards.map((item) => {
+          const author = users.find((user) => user.id === item.author);
+          return (
+            <ListItem key={item.id} disablePadding>
+              <ListItemButton
+                sx={{ textAlign: 'center' }}
+                onClick={() => handleRedirect('/board/' + item.id)}
+              >
+                <ListItemText
+                  primary={item.title.toUpperCase()}
+                  secondary={author?.username}
+                />
+              </ListItemButton>
+            </ListItem>
+          );
+        })
+      ),
+    [users, boards],
+  );
+
+  const handleRedirect = (path: string, options?: NavigateOptions) => {
+    navigate(path, options);
   };
 
   return (
@@ -33,28 +66,18 @@ function Board() {
         fontWeight={700}
         fontSize={(theme) => theme.typography.pxToRem(32)}
       >
-        Title1
+        Lorem ipsum dolor sit amet.
       </Typography>
       {auth.user && (
-        <Button onClick={() => handleRedirect('write')}>write</Button>
+        <Button
+          onClick={() =>
+            handleRedirect('write', { state: { referer: '/board' } })
+          }
+        >
+          write
+        </Button>
       )}
-      <List>
-        {boards.map((item) => (
-          <ListItem key={item.id} disablePadding>
-            <ListItemButton
-              sx={{ textAlign: 'center' }}
-              onClick={() => handleRedirect('/board/' + item.id)}
-            >
-              <ListItemText primary={item.title.toUpperCase()} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-        {boards.length === 0 && (
-          <ListItem>
-            <ListItemText>no items</ListItemText>
-          </ListItem>
-        )}
-      </List>
+      <List>{boardAuthor}</List>
     </Box>
   );
 }

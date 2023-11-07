@@ -5,15 +5,14 @@ import { UserService } from '@src/user/user.service';
 import * as mailer from 'nodemailer';
 import * as cryptoJS from 'crypto-js';
 
-const checkMailMap = new Map<
-  string,
-  {
-    email: string;
-    token: string;
-    time: number;
-    resolver: (value: unknown) => void;
-  }
->();
+type CheckMailType = {
+  email: string;
+  token: string;
+  time: number;
+  resolver: (value: boolean) => void;
+};
+
+const checkMailMap = new Map<string, CheckMailType>();
 
 @Injectable()
 export class MailerService {
@@ -64,7 +63,7 @@ export class MailerService {
 
     const result = await transforter.sendMail({
       from: `${smtpFromName} <${smtpFromEmail}>`,
-      to: `${email + 'qqq'}`,
+      to: `${email}`,
       subject: '테스트 메일 서비스',
       // text: '헬로 월드?',
       html: `
@@ -81,10 +80,11 @@ export class MailerService {
     if (result.accepted.length > 0) {
       console.log(`success send mail to ${email}`);
     } else {
-      ApiResponseService.NOT_FOUND('email is not exists!', email + 'qqq');
+      ApiResponseService.NOT_FOUND('email is not exists!', email);
     }
 
     await promise;
+
     return result;
   }
 
@@ -93,38 +93,34 @@ export class MailerService {
     const NOW = +new Date();
     const hasTokenInStore = checkMailMap.has(token);
     const tokenInfo = checkMailMap.get(token);
+    let flag: string = '';
 
     if (hasTokenInStore) {
       const { email, token, time, resolver } = tokenInfo;
 
       const isExpired = NOW - time > EXPIRED_TIME;
       if (isExpired) {
-        /* initialize */
-        checkMailMap.delete(token);
-        return 'expired';
+        flag = 'expired';
       }
 
-      // console.log('token is matched!');
-      // console.log('checkMailMap', checkMailMap);
+      console.log('token is matched!');
+      console.log('checkMailMap', checkMailMap);
       const user = await this.userService.findOneByEmail(email);
 
       if (user) {
         console.log('found user!');
-        /* initialize */
-        checkMailMap.delete(token);
         resolver(true);
+        flag = 'success';
       } else {
-        // ApiResponseService.NOT_FOUND('user not found.');
-        /* initialize */
-        checkMailMap.delete(token);
-        return 'no exists';
+        flag = 'no exists';
       }
     } else {
-      // ApiResponseService.FORBIDDEN('wrong token. token is not exists!');
-      return 'token no exists';
+      flag = 'token no exists';
     }
-    // return tokenInfo.email;
-    return 'success';
+
+    /* initialize */
+    checkMailMap.delete(token);
+    return flag;
   }
 
   makeToken(email: string, sendTime: number) {

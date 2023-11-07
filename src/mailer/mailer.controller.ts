@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   Post,
@@ -15,10 +16,11 @@ import { Response } from 'express';
 export class MailerController {
   constructor(private readonly mailerService: MailerService) {}
 
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   @Post('confirm')
-  async emailConfirm(@Request() req) {
-    return this.mailerService.sendEmail(req.user.email);
+  async emailConfirm(@Body('email') email: string) {
+    // return this.mailerService.sendEmail(req.user.email);
+    return this.mailerService.sendEmail(email);
   }
 
   @Get('check')

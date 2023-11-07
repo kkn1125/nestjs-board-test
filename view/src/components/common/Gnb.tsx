@@ -36,6 +36,8 @@ interface Props {
   window?: () => Window;
 }
 
+const BRAND_NAME = 'devkimson';
+
 const drawerWidth = 240;
 
 // type ParseUser = {
@@ -63,9 +65,6 @@ export default function Gnb(props: Props) {
     (async () => {
       const { data: userData } = await apiAxios.get('/user');
       const { data: boardData } = await apiAxios.get('/board');
-      authDispatch({
-        type: AUTH_DATA_ACTION.LOAD,
-      });
       apiDataDispatch({
         type: API_DATA_ACTION.LOAD_USER,
         user: userData.data,
@@ -74,8 +73,11 @@ export default function Gnb(props: Props) {
         type: API_DATA_ACTION.LOAD_BOARD,
         board: boardData.data,
       });
+      authDispatch({
+        type: AUTH_DATA_ACTION.LOAD,
+      });
     })();
-  }, [apiData.version, auth.version]);
+  }, [auth.version, apiData.version]);
 
   useEffect(() => {
     if (auth.auth.token) {
@@ -119,7 +121,7 @@ export default function Gnb(props: Props) {
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
       <Typography variant="h6" sx={{ my: 2 }}>
-        MUI
+        {BRAND_NAME.toUpperCase()}
       </Typography>
       <Divider />
       <List>
@@ -160,7 +162,7 @@ export default function Gnb(props: Props) {
             component="div"
             sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}
           >
-            MUI
+            {BRAND_NAME.toUpperCase()}
           </Typography>
           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
             {navItems.map((item) => (

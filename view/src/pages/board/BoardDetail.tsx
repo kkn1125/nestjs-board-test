@@ -1,4 +1,10 @@
-import { ApiDataContext, Board, User } from '@/context/api-data.provider';
+import {
+  API_DATA_ACTION,
+  ApiDataContext,
+  ApiDataDispatchContext,
+  Board,
+  User,
+} from '@/context/api-data.provider';
 import { AuthContext } from '@/context/auth.provider';
 import { apiAxios } from '@/util/instances';
 import {
@@ -16,6 +22,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 function BoardDetail() {
   const params = useParams();
   const apiData = useContext(ApiDataContext);
+  const apiDataDispatch = useContext(ApiDataDispatchContext);
   const [board, setBoard] = useState<Board | undefined>(undefined);
   const [user, setUser] = useState<User | undefined>(undefined);
   const auth = useContext(AuthContext);
@@ -39,14 +46,24 @@ function BoardDetail() {
   const handleUpdateBoard = () => {
     if (board && user) {
       navigate('/board/write', {
-        state: { board, user, referer: locate.pathname },
+        state: { mode: 'update', board, user, referer: locate.pathname },
       });
     }
   };
-  const handleDeleteBoard = () => {
+  const handleDeleteBoard = async () => {
     if (board) {
-      apiAxios.delete(`/board/${board.id}`);
+      if (confirm('게시글을 삭제합니다.')) {
+        const { data } = await apiAxios.delete(`/board/${board.id}`);
+        if (data.ok === true) {
+          apiDataDispatch({
+            type: API_DATA_ACTION.UPDATE_VER,
+          });
+          alert('게시글이 삭제되었습니다.');
+          handleRedirect('../');
+        }
+      }
     }
+    return false;
   };
 
   return (

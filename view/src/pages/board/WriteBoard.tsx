@@ -35,7 +35,7 @@ function WriteBoard() {
   const apiDataDispatch = useContext(ApiDataDispatchContext);
   const navigate = useNavigate();
   const locate = useLocation();
-  const writeMode = !locate.state ? 'write' : 'update';
+  const writeMode = !locate.state.mode ? 'write' : 'update';
 
   useEffect(() => {
     if (writeMode === 'update') {
@@ -87,7 +87,7 @@ function WriteBoard() {
           const response = await (writeMode === 'write'
             ? sendPostRequest(formData, user)
             : sendPutRequest(formData, user, board));
-          if (response.status === 201) {
+          if (response.status === 200 || response.status === 201) {
             apiDataDispatch({
               type: API_DATA_ACTION.UPDATE_VER,
             });
@@ -124,7 +124,6 @@ function WriteBoard() {
   const handleRedirect = (path: string) => {
     navigate(path);
   };
-
   return (
     <Container maxWidth="sm">
       <Typography
@@ -159,7 +158,12 @@ function WriteBoard() {
           <Button variant="contained" type="submit">
             {writeMode}
           </Button>
-          <Button variant="contained" color="error" type="button">
+          <Button
+            variant="contained"
+            color="error"
+            type="button"
+            onClick={() => handleRedirect(locate.state.referer)}
+          >
             cancel
           </Button>
           {writeMode === 'update' && (
