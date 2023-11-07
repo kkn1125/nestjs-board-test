@@ -10,6 +10,7 @@ type CheckMailType = {
   token: string;
   time: number;
   resolver: (value: boolean) => void;
+  used: boolean;
 };
 
 const checkMailMap = new Map<string, CheckMailType>();
@@ -55,21 +56,30 @@ export class MailerService {
     const token = this.makeToken(email, sendTime);
     // console.log(token);
 
-    checkMailMap.set(token, { email, token, time: sendTime, resolver });
+    checkMailMap.set(token.replace(/=+/g, ''), {
+      email,
+      token,
+      time: sendTime,
+      resolver,
+      used: false,
+    });
 
     const checkMailLink = `http://localhost:5000/api/mailer/check?q=${encodeURIComponent(
-      token,
+      `tkn=${token}&e=${email}`,
     )}`;
 
     const result = await transforter.sendMail({
       from: `${smtpFromName} <${smtpFromEmail}>`,
       to: `${email}`,
-      subject: '테스트 메일 서비스',
+      subject: '본인인증 메일',
       // text: '헬로 월드?',
       html: `
-        <h3>hello world!</h3>
+        <h3>본인에 의한 메일 발송이 아니라면 아래 문의처로 연락주세요.</h3>
         <div>
           <a href="${checkMailLink}">click this link.</a>
+        </div>
+        <div>
+          문의처: 02-1231-1231
         </div>
       `,
     });
@@ -85,48 +95,81 @@ export class MailerService {
 
     await promise;
 
+    transforter.close();
+
     return result;
   }
 
-  async checkEncryptMessage(token: string) {
-    const EXPIRED_TIME = 1000 * 10;
+  async checkEncryptMessage(queryParams: URLSearchParams) {
+    const token = queryParams.get('tkn');
+    const email = queryParams.get('e');
+    const EXPIRED_TIME = 1000 * 30;
     const NOW = +new Date();
-    const hasTokenInStore = checkMailMap.has(token);
     const tokenInfo = checkMailMap.get(token);
+    // const emailInfo = checkMailMap.get(token);
+    let tokenStack = null;
     let flag: string = '';
 
-    if (hasTokenInStore) {
-      const { email, token, time, resolver } = tokenInfo;
-
-      const isExpired = NOW - time > EXPIRED_TIME;
-      if (isExpired) {
-        flag = 'expired';
+    for (let i = EXPIRED_TIME; i >= 0; i -= 1000) {
+      const compareToken = this.makeToken(
+        email,
+        Math.floor(NOW / 1000) * 1000 - i,
+      );
+      if (compareToken === token) {
+        console.log('token matched!');
+        tokenStack = compareToken;
+        break;
       }
+    }
+    const hasTokenInServer = checkMailMap.has(token);
+    const availableToken = checkMailMap.has(tokenStack);
 
-      console.log('token is matched!');
-      console.log('checkMailMap', checkMailMap);
-      const user = await this.userService.findOneByEmail(email);
+    if (hasTokenInServer) {
+      if (tokenInfo.used) {
+        console.log('already used token');
+        flag = 'already used';
+      } else if (availableToken) {
+        const { email, token, time, resolver } = tokenInfo;
 
-      if (user) {
-        console.log('found user!');
-        resolver(true);
-        flag = 'success';
+        console.log('token is matched!');
+        const user = await this.userService.findOneByEmail(email);
+
+        if (user) {
+          console.log('found user!');
+          resolver(true);
+          flag = 'success';
+          checkMailMap.set(token, Object.assign(tokenInfo, { used: true }));
+        } else {
+          flag = 'not found user';
+        }
       } else {
-        flag = 'no exists';
+        // token expired
+        const { time } = tokenInfo;
+        const isExpired = NOW - time > EXPIRED_TIME;
+        if (isExpired) {
+          flag = 'expired';
+        } else {
+          flag = 'invalid token format';
+        }
       }
     } else {
       flag = 'token no exists';
     }
 
     /* initialize */
-    checkMailMap.delete(token);
+    // checkMailMap.delete(token);
     return flag;
   }
 
   makeToken(email: string, sendTime: number) {
     return cryptoJS
       .HmacSHA256(
-        'check:' + email + '|' + sendTime + '|' + 'localhost:5000',
+        'check:' +
+          email +
+          '|' +
+          Math.floor(sendTime / 1000) * 1000 +
+          '|' +
+          'localhost:5000',
         this.configService.get<string>('mailer.privkey'),
       )
       .toString();

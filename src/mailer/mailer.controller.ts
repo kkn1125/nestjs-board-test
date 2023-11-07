@@ -11,10 +11,14 @@ import {
 import { AuthGuard } from '@src/auth/auth.guard';
 import { MailerService } from './mailer.service';
 import { Response } from 'express';
+import { MailerPage } from './mailer.page';
 
 @Controller('mailer')
 export class MailerController {
-  constructor(private readonly mailerService: MailerService) {}
+  constructor(
+    private readonly mailerService: MailerService,
+    private readonly mailerPage: MailerPage,
+  ) {}
 
   // @UseGuards(AuthGuard)
   @Post('confirm')
@@ -25,69 +29,11 @@ export class MailerController {
 
   @Get('check')
   async checkEncryptMessage(@Res() res: Response, @Query('q') q: string) {
-    const token = decodeURIComponent(q);
+    const tokenQuery = decodeURIComponent(q);
+    const tokenParams = new URLSearchParams(tokenQuery);
     res.contentType('text/html');
     const isCheckSuccessed =
-      await this.mailerService.checkEncryptMessage(token);
-    switch (isCheckSuccessed) {
-      case 'success':
-        res.send(`
-          <script>
-            function closing(){
-              window.close();
-            }
-          </script>
-          <h3>✅ Check Success!</h3>
-          <h5>인증이 완료되었습니다. 아래 닫기를 눌러 창을 닫아주세요.</h5>
-          <div>
-            <a href="javascript:void" onclick="closing()">닫기</a>
-          </div>
-        `);
-        break;
-      case 'token no exists':
-        res.send(`
-          <script>
-            function closing(){
-              window.close();
-            }
-          </script>
-          <h3>❌ Check Fail!</h3>
-          <h5>token invalid</h5>
-          <div>
-            <a href="javascript:void" onclick="closing()">닫기</a>
-          </div>
-        `);
-        break;
-      case 'expired':
-        res.send(`
-          <script>
-            function closing(){
-              window.close();
-            }
-          </script>
-          <h3>✅ Check Fail!</h3>
-          <h5>check time expired</h5>
-          <div>
-            <a href="javascript:void" onclick="closing()">닫기</a>
-          </div>
-        `);
-        break;
-      case 'no exists':
-        res.send(`
-          <script>
-            function closing(){
-              window.close();
-            }
-          </script>
-          <h3>✅ Check Fail!</h3>
-          <h5>no exists email in db!</h5>
-          <div>
-            <a href="javascript:void" onclick="closing()">닫기</a>
-          </div>
-        `);
-        break;
-      default:
-        break;
-    }
+      await this.mailerService.checkEncryptMessage(tokenParams);
+    res.send(this.mailerPage.output(isCheckSuccessed));
   }
 }

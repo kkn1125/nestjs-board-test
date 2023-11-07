@@ -7,6 +7,7 @@ import { LoggerModule } from '@src/logger/logger.module';
 import { ConfigModule } from '@nestjs/config';
 import mailerConfig from './mailer.config';
 import { UserModule } from '@src/user/user.module';
+import { MailerPage } from './mailer.page';
 
 @Module({
   imports: [
@@ -19,6 +20,6 @@ import { UserModule } from '@src/user/user.module';
     UserModule,
   ],
   controllers: [MailerController],
-  providers: [MailerService],
+  providers: [MailerService, MailerPage],
 })
 export class MailerModule {}
